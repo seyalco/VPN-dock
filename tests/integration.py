@@ -313,9 +313,11 @@ def exercise(work, engine, curl, upstream="", *, tundock_source=None, local_sche
 
 def main():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from vpngate.core import find_sing_box
+
     curl = shutil.which("curl")
-    engine = shutil.which(os.environ.get("VPNDOCK_SING_BOX") or "sing-box")
-    assert curl and engine, "The integration test requires curl and sing-box."
+    assert curl, "The integration test requires curl."
+    engine = find_sing_box()
     route_command = ["ip", "-j", "-4", "route", "show", "table", "main"]
     before = subprocess.check_output(route_command)
     with tempfile.TemporaryDirectory(prefix="vpndock-test-") as directory:

@@ -93,6 +93,8 @@ def verify_engine(path):
 with output.open("wb") as raw, gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as packed:
     with tarfile.open(mode="w", fileobj=packed, format=tarfile.USTAR_FORMAT) as archive:
         app = root / "vpngate"
+        for name in ("LICENSE", "THIRD-PARTY-NOTICES"):
+            add_file(archive, root / name, name, 0o644)
         for path in [*sorted(app.glob("*.py")), app / "style.css", app / "vpndock.png"]:
             add_file(archive, path, f"vpngate/{path.name}", 0o644)
         if engine:

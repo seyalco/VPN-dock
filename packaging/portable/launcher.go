@@ -73,7 +73,11 @@ func launch() int {
 	args := append([]string{"-E", "-s", "-B", "-m", "vpngate"}, os.Args[1:]...)
 	command := exec.CommandContext(ctx, python, args...)
 	command.Dir = directory
-	command.Env = append(os.Environ(), "VPNDOCK_PORTABLE=1")
+	launcherDir := ""
+	if executable, err := os.Executable(); err == nil {
+		launcherDir = filepath.Dir(executable)
+	}
+	command.Env = append(command.Environ(), "VPNDOCK_PORTABLE=1", "VPNDOCK_LAUNCHER_DIR="+launcherDir)
 	if bundledEngine == "yes" {
 		command.Env = append(command.Env, "VPNDOCK_SING_BOX="+filepath.Join(directory, "engine", "sing-box"))
 	}
@@ -163,6 +167,8 @@ func validMember(member *tar.Header) bool {
 		return strings.HasSuffix(name, ".py") || name == "style.css" || name == "vpndock.png"
 	}
 	switch member.Name {
+	case "LICENSE", "THIRD-PARTY-NOTICES":
+		return true
 	case "engine/sing-box", "engine/LICENSE", "engine/SOURCE":
 		return bundledEngine == "yes"
 	default:
@@ -189,12 +195,12 @@ func extractMember(archive io.Reader, member *tar.Header, directory string) erro
 }
 
 func printNotices(directory string) int {
-	if bundledEngine != "yes" {
-		fmt.Println("This executable uses a sing-box engine provided by the system.")
-		return 0
+	names := []string{"LICENSE", "THIRD-PARTY-NOTICES"}
+	if bundledEngine == "yes" {
+		names = append(names, "engine/SOURCE", "engine/LICENSE")
 	}
-	for _, name := range []string{"SOURCE", "LICENSE"} {
-		content, err := os.ReadFile(filepath.Join(directory, "engine", name))
+	for _, name := range names {
+		content, err := os.ReadFile(filepath.Join(directory, name))
 		if err != nil {
 			return report(err.Error())
 		}

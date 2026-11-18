@@ -14,7 +14,7 @@ gi.require_version("Adw", "1")
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, GObject, Gtk
 
-from .core import Config, Gateway, GatewayError
+from .core import Config, Gateway, GatewayError, SingBoxMissingError, find_sing_box
 from .ingress import Upstream
 from .validation import NATIVE_PACKAGE_WARNING, SandboxedPackageError, validate_native
 
@@ -259,11 +259,9 @@ class Window(Adw.ApplicationWindow):
         dialog.set_close_response("close")
         dialog.present()
 
-    def _show_package_warning(self, error):
-        self._set_status("error", "Choose a native VPN client", str(error))
-        dialog = Adw.MessageDialog(
-            transient_for=self, heading="Choose a native VPN client", body=str(error),
-        )
+    def show_error_dialog(self, title, error):
+        self._set_status("error", title, str(error))
+        dialog = Adw.MessageDialog(transient_for=self, heading=title, body=str(error))
         dialog.add_response("close", "Close")
         dialog.set_close_response("close")
         dialog.present()
@@ -278,7 +276,7 @@ class Window(Adw.ApplicationWindow):
         try:
             Config(command, "auto", 1089, folder).argv()
         except SandboxedPackageError as error:
-            self._show_package_warning(error)
+            self.show_error_dialog("Choose a native VPN client", error)
         except (GatewayError, ValueError, OSError) as error:
             self._set_status("error", "Cannot use this launcher", str(error))
         else:
@@ -296,7 +294,7 @@ class Window(Adw.ApplicationWindow):
             if app.get_boolean("Terminal"):
                 raise GatewayError("This launcher needs an interactive terminal.")
         except SandboxedPackageError as error:
-            self._show_package_warning(error)
+            self.show_error_dialog("Choose a native VPN client", error)
         except (GatewayError, ValueError, OSError) as error:
             self._set_status("error", "Cannot use this launcher", str(error))
         else:
@@ -389,6 +387,7 @@ class Window(Adw.ApplicationWindow):
             self._request_stop()
             return
         try:
+            find_sing_box()
             command = self.command.get_text().strip()
             if not command:
                 self.command.grab_focus()
@@ -401,7 +400,10 @@ class Window(Adw.ApplicationWindow):
             config.argv()
             Upstream.parse(config.upstream)
         except SandboxedPackageError as error:
-            self._show_package_warning(error)
+            self.show_error_dialog("Choose a native VPN client", error)
+            return
+        except SingBoxMissingError as error:
+            self.show_error_dialog("sing-box is required", error)
             return
         except (GatewayError, ValueError, OSError) as error:
             self._set_status("error", "Check settings", str(error))
@@ -555,8 +557,16 @@ class Application(Adw.Application):
         Adw.Application.do_shutdown(self)
 
     def do_activate(self):
-        window = self.get_active_window() or Window(self)
+        window = self.get_active_window()
+        if window is not None:
+            window.present()
+            return
+        window = Window(self)
         window.present()
+        try:
+            find_sing_box()
+        except SingBoxMissingError as error:
+            window.show_error_dialog("sing-box is required", error)
 
     def _shutdown(self):
         for window in self.get_windows():

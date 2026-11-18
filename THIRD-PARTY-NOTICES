@@ -1,3 +1,22 @@
+sing-box 1.14.4
+===============
+
+sing-box is developed by SagerNet and its contributors. The portable build
+includes an executable built from the upstream v1.14.4 source
+(commit c005f35300ce76427dc285481ec5695f5b179cd2).
+
+sing-box is licensed under GPL-3.0-or-later with additional terms stated
+in the upstream LICENSE. The complete license notice and the link to the
+matching source are inside the executable and can be displayed with
+--portable-notices. Each public release offers the matching source archive
+beside the executable.
+
+Upstream source: https://github.com/SagerNet/sing-box/tree/v1.14.4
+Upstream license: https://github.com/SagerNet/sing-box/blob/v1.14.4/LICENSE
+
+Go runtime
+==========
+
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without

@@ -35,6 +35,10 @@ class GatewayError(RuntimeError):
     pass
 
 
+class SingBoxMissingError(GatewayError):
+    pass
+
+
 @dataclass(frozen=True)
 class Config:
     command: str
@@ -81,14 +85,41 @@ def remove_owned_socket(path, device, inode):
         pass
 
 
+def find_sing_box():
+    instructions = (
+        "Install sing-box 1.14 or newer using your distribution’s package manager, or download the Linux "
+        "build for your architecture from https://github.com/SagerNet/sing-box/releases. Place the extracted "
+        "binary at ~/.local/bin/sing-box and run chmod +x ~/.local/bin/sing-box."
+    )
+    override = os.environ.get("VPNDOCK_SING_BOX")
+    if override:
+        executable = shutil.which(os.path.expanduser(override))
+        if executable:
+            return os.path.abspath(executable)
+        raise SingBoxMissingError(f"VPNDOCK_SING_BOX does not point to an executable sing-box.\n\n{instructions}")
+
+    home = Path.home()
+    data_home = Path(os.environ.get("XDG_DATA_HOME", ""))
+    if not data_home.is_absolute():
+        data_home = home / ".local/share"
+    launcher_dir = Path(os.environ.get("VPNDOCK_LAUNCHER_DIR", ""))
+    bases = (launcher_dir, ROOT.parent) if launcher_dir.is_absolute() else (ROOT.parent,)
+    candidates = [base / name for base in bases for name in ("bin/sing-box", "sing-box")]
+    candidates.extend((data_home / "vpndock/bin/sing-box", home / ".local/bin/sing-box", "sing-box"))
+    for candidate in candidates:
+        executable = shutil.which(str(candidate))
+        if executable:
+            return os.path.abspath(executable)
+    raise SingBoxMissingError(instructions)
+
+
 def dependencies():
     if sys.platform != "linux" or os.geteuid() == 0:
         raise GatewayError("Run VPN Dock on Linux as your desktop user.")
+    engine = find_sing_box()
     found = {name: shutil.which(name) for name in (
         "bwrap", "pasta", "nsenter", "unshare", "getsubids", "setpriv", "ip", "ss", "socat", "nft",
     )}
-    preferred = os.environ.get("VPNDOCK_SING_BOX")
-    found["sing-box"] = shutil.which(preferred or "sing-box")
     missing = [name for name, executable in found.items() if not executable]
     if missing:
         raise GatewayError("Missing runtime tools: " + ", ".join(missing))
@@ -104,6 +135,7 @@ def dependencies():
         found.update(desktop_dependencies().tools)
     except DesktopError as error:
         raise GatewayError(str(error)) from error
+    found["sing-box"] = engine
     return found
 
 

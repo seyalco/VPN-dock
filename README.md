@@ -20,12 +20,13 @@ the selected VPN path as SOCKS5 and HTTP CONNECT on `127.0.0.1`.
 Both output protocols share one local port and carry IPv4 TCP. SOCKS5 declines
 UDP ASSOCIATE. Local processes on the host can use the listener.
 
-The release executable uses sing-box from your system. After downloading,
-mark the executable as runnable if needed and launch it directly:
+The Linux x86-64 release executable includes sing-box 1.14.4. The desktop and
+Linux dependencies below still apply. Mark the downloaded file as runnable
+if needed and launch it directly.
 
 ```sh
-chmod +x VPN-Dock-0.7.0-linux-x86_64
-./VPN-Dock-0.7.0-linux-x86_64
+chmod +x VPN-Dock-0.7.1-linux-x86_64
+./VPN-Dock-0.7.1-linux-x86_64
 ```
 
 From the extracted source package, run
@@ -86,16 +87,25 @@ ranges for the desktop user. On Fedora the runtime uses Python 3, PyGObject,
 GTK 4, libadwaita, NetworkManager, dbus-daemon, bubblewrap, util-linux,
 shadow-utils-subid, iproute, nftables, passt/pasta, socat and `/dev/net/tun`.
 Use dconf and GNOME Keyring for private desktop settings and Secret Service.
-Install [sing-box 1.14 or later](https://sing-box.sagernet.org/installation/).
-VPN Dock finds the engine on PATH or uses the binary selected by
-`VPNDOCK_SING_BOX`. Run the executable with `--check-runtime` to check local
-dependencies.
+
+For source runs, install sing-box 1.14 or later using the [upstream package instructions](https://sing-box.sagernet.org/installation/package-manager/) or extract the executable for your architecture from an [official sing-box release](https://github.com/SagerNet/sing-box/releases). From the extracted directory, use `install -Dm755 ./sing-box "$HOME/.local/bin/sing-box"`.
+
+The published portable uses its embedded copy. Source runs and portable builds without an embedded engine check the following locations in order.
+
+1. The explicit `VPNDOCK_SING_BOX` override, when set.
+2. `bin/sing-box` beside the launcher, followed by `sing-box` in the same directory. For a source run, these paths are relative to the checkout.
+3. `${XDG_DATA_HOME:-$HOME/.local/share}/vpndock/bin/sing-box`, then `~/.local/bin/sing-box`.
+4. `sing-box` on `$PATH`.
+
+Run `./run-vpndock --check-runtime` to check the setup.
 
 ```sh
 VPNDOCK_SING_BOX=/path/to/sing-box /usr/bin/python3 tests/integration.py
-./packaging/make-portable.sh /tmp/VPN-Dock-0.7.0-linux-x86_64
+./packaging/make-portable.sh /tmp/VPN-Dock-0.7.1-linux-x86_64
 ./packaging/make-release.sh /tmp
 ```
+
+The example above builds a portable that uses an external engine. To include your own engine, pass `--engine FILE --engine-license FILE --engine-source HTTPS_URL` before the output path. The builder writes a companion SHA-256 file.
 
 The Linux test exercises direct mode and a controlled SOCKS5 A, a real TUN and
 client-owned HTTP and SOCKS listeners, both downstream protocols, kernel
@@ -105,5 +115,4 @@ stays the same. To test Tundock as a downstream consumer, set
 
 ## License
 
-VPN Dock is licensed under GPL-3.0-or-later. See [LICENSE](LICENSE) and the
-portable launcher’s [third-party notices](THIRD-PARTY-NOTICES).
+VPN Dock is licensed under GPL-3.0-or-later. The portable includes sing-box by SagerNet, licensed under GPL-3.0-or-later with the additional terms in its upstream license notice. Run the portable with `--portable-notices` to see the licenses and link to the matching engine source. [VPN Dock license](LICENSE) · [Third-party notices](THIRD-PARTY-NOTICES) · [Release downloads and corresponding source](https://github.com/seyalco/VPN-dock/releases)

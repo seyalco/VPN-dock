@@ -13,8 +13,9 @@ def main():
     try:
         from .ui import Application
         if args.check_runtime:
-            dependencies()
+            tools = dependencies()
             print(f"VPN Dock {__version__} · GTK and network dependencies available")
+            print(f"sing-box engine at {tools['sing-box']}")
             return 0
         application = Application()
     except (GatewayError, ImportError, ValueError) as error:
