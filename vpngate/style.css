@@ -1,0 +1,156 @@
+@define-color dock_teal #148977;
+@define-color dock_blue #28748e;
+@define-color dock_ready #20866c;
+@define-color dock_waiting #b77a22;
+@define-color dock_error #c44d56;
+
+.vpn-dock {
+  background-color: @window_bg_color;
+  color: @window_fg_color;
+  font-family: Inter, Cantarell, Sans;
+}
+
+.dock-header {
+  background-color: @headerbar_bg_color;
+  color: @headerbar_fg_color;
+  border-bottom: 1px solid @borders;
+}
+
+.dock-wordmark {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.dock-content {
+  padding: 18px 20px 16px;
+}
+
+.dock-hero {
+  padding: 20px 19px;
+  border: 1px solid mix(@window_bg_color, @dock_teal, .42);
+  border-radius: 15px;
+  background-image: linear-gradient(115deg,
+    mix(@window_bg_color, @dock_teal, .22),
+    mix(@window_bg_color, @dock_blue, .15));
+}
+
+.dock-headline {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -.45px;
+}
+
+.hero-copy {
+  color: alpha(@window_fg_color, .83);
+  font-size: 13px;
+}
+
+.dock-card {
+  padding: 13px 15px;
+  border: 1px solid @borders;
+  border-radius: 13px;
+  background-color: @card_bg_color;
+  color: @card_fg_color;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.dock-muted {
+  color: alpha(currentColor, .78);
+  font-size: 12px;
+}
+
+.field-name,
+.endpoint-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dock-code,
+.endpoint-address,
+.activity-console {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.status-panel {
+  min-height: 41px;
+}
+
+.status-title {
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.status-dot {
+  border-radius: 10px;
+  background-color: alpha(@window_fg_color, .53);
+}
+
+.status-panel.waiting .status-dot,
+.status-panel.stopping .status-dot {
+  background-color: @dock_waiting;
+}
+
+.status-panel.ready {
+  border-color: mix(@window_bg_color, @dock_ready, .48);
+  background-color: mix(@window_bg_color, @dock_ready, .15);
+}
+
+.status-panel.ready .status-dot {
+  background-color: @dock_ready;
+}
+
+.status-panel.error {
+  border-color: mix(@window_bg_color, @dock_error, .48);
+  background-color: mix(@window_bg_color, @dock_error, .15);
+}
+
+.status-panel.error .status-dot {
+  background-color: @dock_error;
+}
+
+.endpoint-card {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: alpha(@window_fg_color, .065);
+}
+
+.endpoint-address {
+  color: @accent_color;
+  font-size: 12px;
+}
+
+.activity-list {
+  background-color: @card_bg_color;
+  border: 1px solid @borders;
+  border-radius: 12px;
+}
+
+.activity-console {
+  margin: 0 11px 11px;
+  border-radius: 8px;
+  border: 1px solid @borders;
+  background-color: @view_bg_color;
+  font-size: 12px;
+}
+
+.activity-console textview,
+.activity-console textview text {
+  color: @view_fg_color;
+  background-color: transparent;
+}
+
+.dock-footer {
+  padding: 10px 20px;
+  border-top: 1px solid @borders;
+  background-color: @headerbar_bg_color;
+  color: @headerbar_fg_color;
+}
+
+button.dock-start {
+  padding: 0 17px;
+  font-weight: 750;
+}
